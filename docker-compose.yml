@@ -1,0 +1,36 @@
+
+services:
+  backend:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python main.py'
+    ports:
+      - 8001:5000
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    environment:
+      - FLASK_APP=main.py
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python consumer.py'
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.2
+    restart: always
+    environment:
+      MYSQL_DATABASE: main
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - .dbdata:/var/lib/mysql
+    ports:
+      - 33067:3306
